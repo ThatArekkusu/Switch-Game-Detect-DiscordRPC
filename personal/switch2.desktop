@@ -1,0 +1,11 @@
+[Desktop Entry]
+Version=1.0
+Type=Application
+Name=Switch 2
+Comment=Launch Nintendo Switch 2
+Exec=/home/kusu/.local/share/applications/switch.sh
+Icon=/home/kusu/Pictures/switch2.png
+StartupWMClass=ffplay
+Terminal=false
+Categories=Game;Utility;
+StartupNotify=false

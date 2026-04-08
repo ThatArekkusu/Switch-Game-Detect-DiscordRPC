@@ -1,0 +1,26 @@
+#!/bin/bash
+
+# 1. Clean up any stuck processes before starting
+pkill -f xorg-discord-rpc
+rm /tmp/xorg-discord-rpc.pid 2>/dev/null
+
+# 2. Start the RPC Tool in the background
+xorg-discord-rpc -i 1488046634452521002 -l /home/kusu/.config/xorg-presence/config.toml &
+
+# 3. Launch Video (Forced X11 + Custom Title)
+env SDL_VIDEODRIVER=x11 ffplay -f v4l2 -video_size 2560x1440 -framerate 60 -input_format nv12 -i /dev/video0 -fflags nobuffer -flags low_delay -probesize 32 -analyzeduration 0 -window_title "Switch 2" &
+PLAYER_PID=$!
+
+# 4. Audio Setup
+sleep 1.5
+pw-link -w 'alsa_input.usb-Elgato_Elgato_HD60_X_A00XB41921AWMM-02.analog-stereo:capture_FL' 'alsa_output.usb-Focusrite_Vocaster_One_USB_V1ZFX7B2A08DCD-00.analog-surround-40:playback_FL'
+pw-link -w 'alsa_input.usb-Elgato_Elgato_HD60_X_A00XB41921AWMM-02.analog-stereo:capture_FR' 'alsa_output.usb-Focusrite_Vocaster_One_USB_V1ZFX7B2A08DCD-00.analog-surround-40:playback_FR'
+
+# 5. Wait for ffplay window to close
+wait $PLAYER_PID
+
+# 6. The "Manual" Cleanup - This runs as soon as you close ffplay
+pkill -f xorg-discord-rpc
+pw-link -d 'alsa_input.usb-Elgato_Elgato_HD60_X_A00XB41921AWMM-02.analog-stereo:capture_FL' 'alsa_output.usb-Focusrite_Vocaster_One_USB_V1ZFX7B2A08DCD-00.analog-surround-40:playback_FL'
+pw-link -d 'alsa_input.usb-Elgato_Elgato_HD60_X_A00XB41921AWMM-02.analog-stereo:capture_FR' 'alsa_output.usb-Focusrite_Vocaster_One_USB_V1ZFX7B2A08DCD-00.analog-surround-40:playback_FR'
+

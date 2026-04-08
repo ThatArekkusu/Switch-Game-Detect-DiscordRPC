@@ -1,24 +1,19 @@
 
 [defaults]
-details = "app"
+details = 'app'
 state = ""       # This pulls "Using Elgato Capture Card"
-large_image = "switch2_logo"
-small_image = "pfp"
+large_image = 'switch2_logo'
+small_image = 'pfp'
 
 [aliases]
-# We map the window "ffplay" to your Elgato line
-ffplay = "elgato"
-discord = "elgato"
+ffplay = 'elgato'
+discord = 'elgato'
 
 
 [unknown]
-name = "Playing Nintendo Switch 2 via ffplay"
-#details = "app"
-#state = "class"
-#large_image = "switch2_logo"
+name = 'Playing Nintendo Switch 2 via ffplay'
 
 [apps.elgato]
-name = "Playing Nintendo Switch 2 via ffplay"
-# details = "Playing Nintendo Switch 2 via ffplay"
-large_image = "switch2_logo"
-small_image= "pfp"
+name = 'Playing Nintendo Switch 2 via ffplay'
+large_image = 'switch2_logo'
+small_image= 'pfp'

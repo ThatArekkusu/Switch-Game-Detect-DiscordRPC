@@ -2,6 +2,10 @@ WIP
 
 This project aims to fix my issue of my discord custom rich presence on linux not displaying what game im playing
 
+# IMPORTANT
+
+if your `/home/{YourUserHere}/.config/xorg-presence/config.toml` has text following an `=` and its in quotations, Ex: `name = "mario"` THIS WILL BREAK, ensure your config file is using quotations, Ex: `name = 'mario'`, this is because `sed` the command which replaces text within files which is whats editing the `/home/{YourUserHere}/.config/xorg-presence/config.toml` file to make it display the game you're playing uses quotations in the command and it will break if your text also uses quotations
+
 ## Explanation
 
 There exists a project called `NSO-RPC` by MCMI460 which relied on your nintendo session token and the nintendo API in order to pass through the game your currently playing through to discord however this no longer works as Nintendo has removed this service, my project aims to rectify this by using visual detection to detect what game you're playing and pass it along that way, this project is intended for me personally so games supported will be those which i play however it should not be difficult to manually import what you wish to detect also

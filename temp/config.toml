@@ -1,0 +1,19 @@
+
+[defaults]
+details = "app"
+state = ""       # This pulls "Using Elgato Capture Card"
+large_image = "switch2_logo"
+small_image = "pfp"
+
+[aliases]
+ffplay = "elgato"
+discord = "elgato"
+
+
+[unknown]
+name = 'Mario Kart World'
+
+[apps.elgato]
+name = 'Mario Kart World'
+large_image = "switch2_logo"
+small_image= "pfp"

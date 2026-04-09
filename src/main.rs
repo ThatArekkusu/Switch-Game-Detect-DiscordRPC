@@ -73,9 +73,11 @@ fn main() -> Result<(), Box<dyn Error>> {
                 envfile.update("CURRENT_GAME", "Home Menu");
                 envfile.write().expect("Failed to write to dotenv file");
                 println!("{}", score_string);
-                execute();  
-            }
-                thread::sleep(Duration::from_millis(250));
+                execute();
+                thread::sleep(Duration::from_millis(50));
+                restart_xorg_rpc(); 
+            } 
+                thread::sleep(Duration::from_millis(50));
                 continue;
         }
 
@@ -85,12 +87,12 @@ fn main() -> Result<(), Box<dyn Error>> {
         let w_mw: u32 = (width * 0.4438) as u32;  
         let h_mw: u32 = (height * 0.4556) as u32;
 
-        fs::remove_file("game-images/mario-kart-world-logo-windowed.png").expect("failed to remove cached file");
+        let _ = fs::remove_file("game-images/mario-kart-world-logo-windowed.png");
         let screenshot_image_path_mario_windowed = file_path("game-images/mario-kart-world-logo-windowed.png");
         let image_mario_kart_world_logo_windowed = screen.capture_area(x_mw, y_mw, w_mw, h_mw).unwrap();
         image_mario_kart_world_logo_windowed.save(&screenshot_image_path_mario_windowed).expect("Err, could not save screenshot");
         let screenshot_mario_windowed = image::open("game-images/mario-kart-world-logo-windowed.png").unwrap().into_luma8();
-        let mario_kart_world_reference_windowed = image::open("game-images/mario-kart-world-logo-windowed.png").unwrap().into_luma8();
+        let mario_kart_world_reference_windowed = image::open("ui-reference/mario-kart-world-logo-windowed-reference.png").unwrap().into_luma8();
 
 
         let x_mf: i32 = (width * 0.2598) as i32; 
@@ -98,28 +100,31 @@ fn main() -> Result<(), Box<dyn Error>> {
         let w_mf: u32 = (width * 0.4578) as u32;  
         let h_mf: u32 = (height * 0.4375) as u32;
 
-        fs::remove_file("game-images/mario-kart-world-logo-fullscreen.png").expect("failed to remove cached file");
+        let _ = fs::remove_file("game-images/mario-kart-world-logo-fullscreen.png");
         let screenshot_image_path_mario_fullscreen = file_path("game-images/mario-kart-world-logo-fullscreen.png");
         let image_mario_kart_world_logo_fullscreen = screen.capture_area(x_mf, y_mf, w_mf, h_mf).unwrap();
         image_mario_kart_world_logo_fullscreen.save(&screenshot_image_path_mario_fullscreen).expect("Err, could not save screenshot");
         let screenshot_mario_fullscreen = image::open("game-images/mario-kart-world-logo-fullscreen.png").unwrap().into_luma8();
-        let mario_kart_world_reference_fullscreen = image::open("game-images/mario-kart-world-logo-fullscreen.png").unwrap().into_luma8();
+        let mario_kart_world_reference_fullscreen = image::open("ui-reference/mario-kart-world-logo-fullscreen-reference.png").unwrap().into_luma8();
 
         let mario_kart_similarity_windowed = image_compare::gray_similarity_structure(&Algorithm::MSSIMSimple, &mario_kart_world_reference_windowed, &screenshot_mario_windowed).unwrap();
         let mario_kart_similarity_fullscreen = image_compare::gray_similarity_structure(&Algorithm::MSSIMSimple, &mario_kart_world_reference_fullscreen, &screenshot_mario_fullscreen).unwrap();
 
         let mario_score: f64 = f64::max(mario_kart_similarity_windowed.score, mario_kart_similarity_fullscreen.score);
         let mario_score_string = mario_score.to_string();
+        println!("{}", mario_score_string);
 
         let pokemon_score = 0.5;
         println!("{}", mario_score_string);
-                if mario_score > 0.9 {
+                if mario_score > 0.45 {
                     if previous_game != "Mario Kart World" {
                         rm_env();
                         envfile.update("CURRENT_GAME", "Mario Kart World");
                         envfile.write().expect("Failed to write to dotenv file");
                         println!("Mario");
                         execute();
+                        thread::sleep(Duration::from_millis(50));
+                        restart_xorg_rpc();
                     }
                 } else if pokemon_score > 0.9 { 
                     if previous_game != "Pokemon Pokopia" {
@@ -127,11 +132,13 @@ fn main() -> Result<(), Box<dyn Error>> {
                         envfile.update("CURRENT_GAME", "Pokemon Pokopia");
                         envfile.write().expect("Failed to write to dotenv file");
                         execute();
+                        thread::sleep(Duration::from_millis(500));
+                        restart_xorg_rpc();
                     }
                 } else {
                     println!("Error: No game detected");
             }
-            thread::sleep(Duration::from_millis(250));
+            //thread::sleep(Duration::from_millis(250));
     }
 }
 
@@ -166,6 +173,24 @@ fn rm_env() {
     let execute = Command::new("bash")
         .arg("-c")
         .arg("./src/shell/rm.sh")
+        .output()
+        .expect("failed to execute");
+
+    println!("{}", String::from_utf8_lossy(&chmod.stdout));
+    println!("{}", String::from_utf8_lossy(&execute.stdout));
+}
+
+fn restart_xorg_rpc() {
+    let chmod = Command::new("chmod")
+        .arg("+x")
+        .arg("./src/shell/restart-xorg-rpc.sh")
+        .output()
+        .expect("failed to make script executable");
+
+    // Pass dotenv file into shell file and execute
+    let execute = Command::new("bash")
+        .arg("-c")
+        .arg("./src/shell/restart-xorg-rpc.sh")
         .output()
         .expect("failed to execute");
 

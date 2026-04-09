@@ -11,9 +11,9 @@ discord = 'elgato'
 
 
 [unknown]
-name = 'Playing Nintendo Switch 2 via ffplay'
+name='Playing Nintendo Switch 2 via ffplay'
 
 [apps.elgato]
-name = 'Playing Nintendo Switch 2 via ffplay'
+name='Playing Nintendo Switch 2 via ffplay'
 large_image = 'switch2_logo'
 small_image= 'pfp'

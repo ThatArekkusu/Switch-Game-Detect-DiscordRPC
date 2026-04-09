@@ -1,28 +1,84 @@
+use ocrs::{ImageSource, OcrEngine, OcrEngineParams};
+use rten::Model;
+use image;
+
 use std::process::Command;
+use std::error::Error;
 use envfile::EnvFile;
+#[allow(unused)]
 use std::path::Path;
+use std::path::PathBuf;
 
+use screenshots::Screen;
+use std::time::Instant;
 
-fn main() {
-    let mut envfile = EnvFile::new(&Path::new(".env")).unwrap();
+/// Given a file path relative to the crate root, return the absolute path.
+fn file_path(path: &str) -> PathBuf {
+    let mut abs_path = PathBuf::from(env!("CARGO_MANIFEST_DIR"));
+    abs_path.push(path);
+    abs_path
+}
+fn main() -> Result<(), Box<dyn Error>> {
+    let detection_model_path = file_path("text-detection.rten");
+    let rec_model_path = file_path("text-recognition.rten");
+
+    let detection_model = Model::load_file(detection_model_path)?;
+    let recognition_model = Model::load_file(rec_model_path)?;
     
-    let game = "Mario Kart World";
+    // initialize OcrEngine
+    let engine = OcrEngine::new(OcrEngineParams {
+        detection_model: Some(detection_model),
+        recognition_model: Some(recognition_model),
+        ..Default::default()
+    })?;
 
-    match game {
-        "Mario Kart World" => {
-            envfile.update("CURRENT_GAME", "Mario Kart World");
+    loop {
+        let region1 = true; 
+        let ocr_input;
+
+        // Set image path and load the image to Ocr
+        if region1 == true {
+            let img_path = file_path("images/region1.png");
+            ocr_input = image_path(img_path, &engine)?;
+        } else {
+            // Handle other regions or provide a default
+            // For now, let's assume we always have region1
+            continue;
         }
-        _ => println!("Error: No game detected")
+
+        // Extract text from image using OcrEngine
+        let extracted_text = engine.get_text(&ocr_input)?;
+
+        println!("{}", extracted_text);
+
+        let mut envfile = EnvFile::new(&Path::new(".env")).unwrap();
+
+        // Use match statement to pass game name to dotfile to be loaded into toml file
+        match extracted_text.as_str() {
+            "Mario Kart World" => {
+                envfile.update("CURRENT_GAME", "Mario Kart World");
+                envfile.write().expect("Failed to write to dotenv file");
+                execute();
+            }
+            "Pokemon Pokopia" => {
+                envfile.update("CURRENT_GAME", "Pokemon Pokopia");
+                envfile.write().expect("Failed to write to dotenv file");
+                execute();
+            }
+            _ => println!("Error: No game detected")
+        }
     }
+}
 
-    envfile.write().expect("Failed to write to dotenv file");
-
+fn execute() {
+    // Make shell file executable
     let chmod = Command::new("chmod")
         .arg("+x")
         .arg("./src/shell/config.sh")
         .output()
         .expect("failed to make script executable");
 
+    // Pass dotenv file into shell file and execute
     let execute = Command::new("bash")
         .arg("-c")
         .arg("set -a; source /home/$USER/Switch-2-GameDetect-RPC/.env; set +a; ./src/shell/config.sh")
@@ -33,4 +89,10 @@ fn main() {
     println!("{}", String::from_utf8_lossy(&execute.stdout));
 }
 
+fn image_path(img_path: PathBuf, engine: &OcrEngine) -> Result<ocrs::OcrInput, Box<dyn Error>> {
+    let img = image::open(img_path)?.into_rgb8();
+    let img_source = ImageSource::from_bytes(img.as_raw(), img.dimensions())?;
+    let ocr_input = engine.prepare_input(img_source)?;
+    Ok(ocr_input)
+}
 

@@ -5,3 +5,9 @@ edition = "2024"
 
 [dependencies]
 envfile = "0.2.1"
+image = "0.25.10"
+lexopt = "0.3.2"
+ocrs = "0.12.2"
+rten = "0.24.0"
+rten-tensor = "0.24.0"
+screenshots = "0.8.10"

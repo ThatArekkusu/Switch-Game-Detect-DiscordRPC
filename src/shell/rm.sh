@@ -1,0 +1,1 @@
+sed -i 's/^CURRENT_GAME=.*/CURRENT_GAME=""/' .env

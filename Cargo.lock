@@ -8,6 +8,7 @@ version = "0.1.0"
 dependencies = [
  "envfile",
  "image 0.25.10",
+ "image-compare",
  "lexopt",
  "ocrs",
  "rten",
@@ -600,6 +601,18 @@ dependencies = [
  "tiff 0.11.3",
  "zune-core",
  "zune-jpeg",
+]
+
+[[package]]
+name = "image-compare"
+version = "0.5.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "176623a137baf75908084aff53578d6336cbd932bffaf12fabe26b343eb13338"
+dependencies = [
+ "image 0.25.10",
+ "itertools",
+ "rayon",
+ "thiserror 2.0.18",
 ]
 
 [[package]]

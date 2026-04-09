@@ -11,9 +11,9 @@ discord = "elgato"
 
 
 [unknown]
-name = 'Mario Kart World'
+name = 'Home Menu'
 
 [apps.elgato]
-name = 'Mario Kart World'
+name = 'Home Menu'
 large_image = "switch2_logo"
 small_image= "pfp"

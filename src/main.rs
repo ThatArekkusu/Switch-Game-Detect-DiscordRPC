@@ -1,5 +1,3 @@
-use ocrs::{ImageSource, OcrEngine, OcrEngineParams};
-use rten::Model;
 use image_compare::{Algorithm};
 use image;
 
@@ -7,6 +5,8 @@ use std::process::Command;
 use std::error::Error;
 use std::thread;
 use std::time::Duration;
+use std::fs;
+
 use envfile::EnvFile;
 #[allow(unused)]
 use std::path::Path;
@@ -22,18 +22,6 @@ fn file_path(path: &str) -> PathBuf {
     abs_path
 }
 fn main() -> Result<(), Box<dyn Error>> {
-    let detection_model_path = file_path("text-detection.rten");
-    let rec_model_path = file_path("text-recognition.rten");
-
-    let detection_model = Model::load_file(detection_model_path)?;
-    let recognition_model = Model::load_file(rec_model_path)?;
-    
-    // initialize OcrEngine
-    let engine = OcrEngine::new(OcrEngineParams {
-        detection_model: Some(detection_model),
-        recognition_model: Some(recognition_model),
-        ..Default::default()
-    })?;
 
     loop {
         let start = Instant::now();
@@ -78,7 +66,6 @@ fn main() -> Result<(), Box<dyn Error>> {
         let score: f64 = f64::max(ui_similarity_fullscreen.score, ui_similarity_windowed.score);
         let score_string = score.to_string();
 
-        let ocr_input;
         // Set image path and load the image to Ocr
         if score > 0.9 {
             if previous_game != "Home Menu" {
@@ -88,40 +75,66 @@ fn main() -> Result<(), Box<dyn Error>> {
                 println!("{}", score_string);
                 execute();  
             }
-                thread::sleep(Duration::from_millis(500));
+                thread::sleep(Duration::from_millis(250));
                 continue;
-        } else {
-            let captured_image = screen.capture().unwrap();
-            captured_image.save(&screenshot_image_path).unwrap();
-            ocr_input = image_path(screenshot_image_path, &engine)?;
         }
 
-        // Extract text from image using OcrEngine
-        let extracted_text = engine.get_text(&ocr_input)?;
-        let detected_game = extracted_text.trim();
 
-        println!("{}", extracted_text);
+        let x_mw: i32 = (width * 0.2703) as i32; 
+        let y_mw: i32 = (height * 0.0465) as i32; 
+        let w_mw: u32 = (width * 0.4438) as u32;  
+        let h_mw: u32 = (height * 0.4556) as u32;
 
-        // Use match statement to pass game name to dotfile to be loaded into toml file
-        match extracted_text.as_str().trim() {
-                "Mario Kart World" if previous_game != detected_game => {
-                rm_env();
-                envfile.update("CURRENT_GAME", "Mario Kart World");
-                envfile.write().expect("Failed to write to dotenv file");
-                execute();
-                }
-            
-            "Pokemon Pokopia" if previous_game != detected_game => {
-                rm_env();
-                envfile.update("CURRENT_GAME", "Pokemon Pokopia");
-                envfile.write().expect("Failed to write to dotenv file");
-                execute();
+        fs::remove_file("game-images/mario-kart-world-logo-windowed.png").expect("failed to remove cached file");
+        let screenshot_image_path_mario_windowed = file_path("game-images/mario-kart-world-logo-windowed.png");
+        let image_mario_kart_world_logo_windowed = screen.capture_area(x_mw, y_mw, w_mw, h_mw).unwrap();
+        image_mario_kart_world_logo_windowed.save(&screenshot_image_path_mario_windowed).expect("Err, could not save screenshot");
+        let screenshot_mario_windowed = image::open("game-images/mario-kart-world-logo-windowed.png").unwrap().into_luma8();
+        let mario_kart_world_reference_windowed = image::open("game-images/mario-kart-world-logo-windowed.png").unwrap().into_luma8();
+
+
+        let x_mf: i32 = (width * 0.2598) as i32; 
+        let y_mf: i32 = (height * 0.0305) as i32; 
+        let w_mf: u32 = (width * 0.4578) as u32;  
+        let h_mf: u32 = (height * 0.4375) as u32;
+
+        fs::remove_file("game-images/mario-kart-world-logo-fullscreen.png").expect("failed to remove cached file");
+        let screenshot_image_path_mario_fullscreen = file_path("game-images/mario-kart-world-logo-fullscreen.png");
+        let image_mario_kart_world_logo_fullscreen = screen.capture_area(x_mf, y_mf, w_mf, h_mf).unwrap();
+        image_mario_kart_world_logo_fullscreen.save(&screenshot_image_path_mario_fullscreen).expect("Err, could not save screenshot");
+        let screenshot_mario_fullscreen = image::open("game-images/mario-kart-world-logo-fullscreen.png").unwrap().into_luma8();
+        let mario_kart_world_reference_fullscreen = image::open("game-images/mario-kart-world-logo-fullscreen.png").unwrap().into_luma8();
+
+        let mario_kart_similarity_windowed = image_compare::gray_similarity_structure(&Algorithm::MSSIMSimple, &mario_kart_world_reference_windowed, &screenshot_mario_windowed).unwrap();
+        let mario_kart_similarity_fullscreen = image_compare::gray_similarity_structure(&Algorithm::MSSIMSimple, &mario_kart_world_reference_fullscreen, &screenshot_mario_fullscreen).unwrap();
+
+        let mario_score: f64 = f64::max(mario_kart_similarity_windowed.score, mario_kart_similarity_fullscreen.score);
+        let mario_score_string = mario_score.to_string();
+
+        let pokemon_score = 0.5;
+        println!("{}", mario_score_string);
+                if mario_score > 0.9 {
+                    if previous_game != "Mario Kart World" {
+                        rm_env();
+                        envfile.update("CURRENT_GAME", "Mario Kart World");
+                        envfile.write().expect("Failed to write to dotenv file");
+                        println!("Mario");
+                        execute();
+                    }
+                } else if pokemon_score > 0.9 { 
+                    if previous_game != "Pokemon Pokopia" {
+                        rm_env();
+                        envfile.update("CURRENT_GAME", "Pokemon Pokopia");
+                        envfile.write().expect("Failed to write to dotenv file");
+                        execute();
+                    }
+                } else {
+                    println!("Error: No game detected");
             }
-            _ => println!("Error: No game detected")
-        }
-        thread::sleep(Duration::from_millis(500));
+            thread::sleep(Duration::from_millis(250));
     }
 }
+
 
 fn execute() {
     // Make shell file executable
@@ -159,11 +172,3 @@ fn rm_env() {
     println!("{}", String::from_utf8_lossy(&chmod.stdout));
     println!("{}", String::from_utf8_lossy(&execute.stdout));
 }
-
-fn image_path(img_path: PathBuf, engine: &OcrEngine) -> Result<ocrs::OcrInput, Box<dyn Error>> {
-    let img = image::open(img_path)?.into_rgb8();
-    let img_source = ImageSource::from_bytes(img.as_raw(), img.dimensions())?;
-    let ocr_input = engine.prepare_input(img_source)?;
-    Ok(ocr_input)
-}
-

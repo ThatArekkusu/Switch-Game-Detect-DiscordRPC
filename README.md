@@ -26,13 +26,43 @@ Requirements
 ## Prerequisits
 
 - A linux distrubution which supports xorg/wayland (i use arch btw)
+- rust installed on system
 
 In order to create your custom rich presence through `xorg-presence-rpc` please click the link for the respective repo in Credits and follow the instructions there, this is a prerequisite to this projects functionality
+
+### Guide
+
+1. Clone the repo and cd to the directory
+```
+git clone https://github.com/ThatArekkusu/Switch-Game-Detect-DiscordRPC
+cd Switch-Game-Detect-DiscordRPC
+```
+
+2. Run with cargo
+```
+cargo run
+```
+
+### FAQ
+- What games are supported?
+At the moment only support for mario kart world is added becuse games have to be hardcoded 
+
+- What games are going to be supported?
+I intend on adding support for Pokemon Pokopia, Tomodatchi Life Living the Dream, Splatoon 3, Mario Maker 2
+
+- How do i add more games myself?
+In order to add games you must implement coordinates to screenshot a corrosponding are of the screen that can be mathced against a reference image and computate a similarity score then invoking that in the if statement, this is less complicated than it sounds but still arduous, i intend to add guides for this at some point
+
+- What is the future of this project?
+I intend to add support for more games in the future if support for this project happens and games are requested
+
+I also want to add furthur support for already implemented games in order to recognise screens other than title scerens in order to rectify the issue of going to home menu and returning back to the game not displaying the game as the title screen is the primary method of recognition at the moment
+
+- footnote
+Im still very inexperienced and am trying to avoid the traps of vibe coding as i learn, im nowhere near experienced enough to be confident in my abilities yet so updates may take some time please bare with me as i learn and improve with time, i hope to update this project semi-regularly especially if support for the project grows :3
 
 ### Credits
 
 I will be attaching the projects which were both inspiration, requirements and a help to this project, thank you to all involved:
 - [MCMI460] https://github.com/MCMi460/NSO-RPC/
 - [thelinuxpirate] https://github.com/thelinuxpirate/xorg-discord-rpc
-
-### Guide

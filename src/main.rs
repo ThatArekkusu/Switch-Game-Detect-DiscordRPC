@@ -117,9 +117,9 @@ fn main() -> Result<(), Box<dyn Error>> {
         let pokemon_score = 0.5;
         println!("{}", mario_score_string);
                 if mario_score > 0.45 {
-                    if previous_game != "Mario Kart World" {
+                    if previous_game != "Playing Mario Kart World" {
                         rm_env();
-                        envfile.update("CURRENT_GAME", "Mario Kart World");
+                        envfile.update("CURRENT_GAME", "Playing Mario Kart World");
                         envfile.write().expect("Failed to write to dotenv file");
                         println!("Mario");
                         execute();
@@ -127,9 +127,9 @@ fn main() -> Result<(), Box<dyn Error>> {
                         restart_xorg_rpc();
                     }
                 } else if pokemon_score > 0.9 { 
-                    if previous_game != "Pokemon Pokopia" {
+                    if previous_game != "Playing Pokemon Pokopia" {
                         rm_env();
-                        envfile.update("CURRENT_GAME", "Pokemon Pokopia");
+                        envfile.update("CURRENT_GAME", "Playing Pokemon Pokopia");
                         envfile.write().expect("Failed to write to dotenv file");
                         execute();
                         thread::sleep(Duration::from_millis(500));

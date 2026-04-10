@@ -44,27 +44,27 @@ cargo run
 ```
 
 ### FAQ
-Q: What games are supported?  
+**Q: What games are supported?**  
 A: At the moment only support for mario kart world is added becuse games have to be hardcoded
 
 
-Q: What games are going to be supported?  
+**Q: What games are going to be supported?**  
 A: I intend on adding support for Pokemon Pokopia, Tomodatchi Life Living the Dream, Splatoon 3, Mario Maker 2. These are games which i play so obviously these are the intended games to be implemented
 
 
-Q: How do i add more games myself?  
+**Q: How do i add more games myself?**  
 A: In order to add games you must implement coordinates to screenshot a corrosponding are of the screen that can be mathced against a reference image and computate a similarity score then invoking that in the if statement, this is less complicated than it sounds but still arduous, i intend to add guides for this at some point
 
 
-Q: Does this work on windows?  
+**Q: Does this work on windows?**  
 A: At the moment this only works on linux, notably i use an arch distro so im confident in its functionality on that only, im unsure about debian based systems or otherwise but its possible it functions on that too, i hope to add windows support at some point in the future but im unsure about when that will be or the roadmap to make this possible
 
 
-Q: Is a capture card required?  
+**Q: Is a capture card required?**  
 A: Unfortunatly yes, this project relies completly on visual recognition in order to determine what game is being played, the previous project `nso-rpc` which is linked in the credits relied on switch online services API in order to retrieve game data but unfortunatly support for this has been stopped by Nintendo and it seems there isnt plans at current for this to change, as far as im aware this project is the only one which has any capability of passing your current played game through to a discord rich prescense
 
 
-Q: What is the future of this project?  
+**Q: What is the future of this project?**  
 A: I intend to add support for more games in the future if support for this project happens and games are requested
 
 

@@ -30,7 +30,7 @@ Requirements
 
 In order to create your custom rich presence through `xorg-presence-rpc` please click the link for the respective repo in Credits and follow the instructions there, this is a prerequisite to this projects functionality
 
-### Guide
+## Guide
 
 1. Clone the repo and cd to the directory
 ```
@@ -43,7 +43,7 @@ cd Switch-Game-Detect-DiscordRPC
 cargo run
 ```
 
-### FAQ
+## FAQ
 **Q: What games are supported?**  
 A: At the moment only support for mario kart world is added becuse games have to be hardcoded
 
@@ -78,7 +78,7 @@ I hope to implement this for switch 1 and for lite mode theme soon, i feel this 
 
 Im still very inexperienced and am trying to avoid the traps of vibe coding as i learn, im nowhere near experienced enough to be confident in my abilities yet so updates may take some time please bare with me as i learn and improve with time, i hope to update this project semi-regularly especially if support for the project grows :3
 
-### Credits
+## Credits
 
 I will be attaching the projects which were both inspiration, requirements and a help to this project, thank you to all involved:
 - [MCMI460] https://github.com/MCMi460/NSO-RPC/

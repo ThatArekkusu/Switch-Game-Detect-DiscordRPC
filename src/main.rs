@@ -24,6 +24,9 @@ fn file_path(path: &str) -> PathBuf {
 fn main() -> Result<(), Box<dyn Error>> {
 
     loop {
+        let mut envfile = EnvFile::new(&file_path(".env")).unwrap();
+        let previous_game = envfile.get("CURRENT_GAME").unwrap_or("").to_string();
+
         let start = Instant::now();
         
         let screens = Screen::all().expect("Failed to find screen");
@@ -38,42 +41,18 @@ fn main() -> Result<(), Box<dyn Error>> {
             screens.get(0).expect("No screens detected at all")
         });
 
-        let screenshot_image_path = file_path("images/nintendo-switch-ui-screenshot.png");
-
         let width = screen.display_info.width as f32;
         let height = screen.display_info.height as f32;
 
-
-        let x: i32 = (width * 0.165) as i32; 
-        let y: i32 = (height * 0.696) as i32; 
-
-        let w: u32 = (width * 0.675) as u32;  
-        let h: u32 = (height * 0.188) as u32; 
-
-        let image = screen.capture_area(x, y, w, h).unwrap();
-        image.save(&screenshot_image_path).unwrap();
-        println!("运行耗时: {:?}", start.elapsed());
-
-        let mut envfile = EnvFile::new(&file_path(".env")).unwrap();
-        let previous_game = envfile.get("CURRENT_GAME").unwrap_or("").to_string();
-
-        let switch_ui_reference_fullscreen = image::open("ui-reference/nintendo-switch-ui-fullscreen.png").unwrap().into_luma8();
-        let switch_ui_reference_windowed = image::open("ui-reference/nintendo-switch-ui-windowed.png").unwrap().into_luma8();
-        let switch_ui_screenshot = image::open("images/nintendo-switch-ui-screenshot.png").unwrap().into_luma8();
-
-        let ui_similarity_fullscreen = image_compare::gray_similarity_structure(&Algorithm::MSSIMSimple, &switch_ui_reference_fullscreen, &switch_ui_screenshot).unwrap();
-        let ui_similarity_windowed = image_compare::gray_similarity_structure(&Algorithm::MSSIMSimple, &switch_ui_reference_windowed, &switch_ui_screenshot).unwrap();
-
-        let score: f64 = f64::max(ui_similarity_fullscreen.score, ui_similarity_windowed.score);
-        let score_string = score.to_string();
+        println!("Started Loop: {:?}", start.elapsed());
 
         // Set image path and load the image to Ocr
-        if score > 0.9 {
+        let home_menu_score = home_menu(&screen, width, height);
+        if home_menu_score > 0.9 {
             if previous_game != "Home Menu" {
                 rm_env(); 
                 envfile.update("CURRENT_GAME", "Home Menu");
                 envfile.write().expect("Failed to write to dotenv file");
-                println!("{}", score_string);
                 execute();
                 thread::sleep(Duration::from_millis(50));
                 restart_xorg_rpc(); 
@@ -84,6 +63,7 @@ fn main() -> Result<(), Box<dyn Error>> {
         
         let mario_score = mario_kart_world(&screen, width, height);
         //let pokemonpkp_score = pokemon_pokopia(&screen, width, height);
+        
         let pokemonpkp_score = 0.5;
 
                 if mario_score > 0.45 {
@@ -112,60 +92,31 @@ fn main() -> Result<(), Box<dyn Error>> {
     }
 }
 
+fn home_menu(screen: &Screen, width: f32, height: f32) -> f64 {
+    // "Home Menu" Image capture code
+        let x: i32 = (width * 0.165) as i32; 
+        let y: i32 = (height * 0.696) as i32; 
+        let w: u32 = (width * 0.675) as u32;  
+        let h: u32 = (height * 0.188) as u32;
 
-fn execute() {
-    // Make shell file executable
-    let chmod = Command::new("chmod")
-        .arg("+x")
-        .arg("./src/shell/config.sh")
-        .output()
-        .expect("failed to make script executable");
+        let home_menu_screenshot = "images/nintendo-switch-ui-screenshot.png";
+        let _ = fs::remove_file(home_menu_screenshot);
+        let screenshot_image_path = file_path(home_menu_screenshot);
+        let image_home_menu = screen.capture_area(x, y, w, h).unwrap();
+        image_home_menu.save(&screenshot_image_path).unwrap();
 
-    // Pass dotenv file into shell file and execute
-    let execute = Command::new("bash")
-        .arg("-c")
-        .arg("set -a; source /home/$USER/Switch-2-GameDetect-RPC/.env; set +a; ./src/shell/config.sh")
-        .output()
-        .expect("failed to execute");
+        let switch_ui_screenshot = image::open("images/nintendo-switch-ui-screenshot.png").unwrap().into_luma8();
+        let switch_ui_reference_fullscreen = image::open("ui-reference/nintendo-switch-ui-fullscreen.png").unwrap().into_luma8();
+        let switch_ui_reference_windowed = image::open("ui-reference/nintendo-switch-ui-windowed.png").unwrap().into_luma8();
+    
+        let ui_similarity_fullscreen = image_compare::gray_similarity_structure(&Algorithm::MSSIMSimple, &switch_ui_reference_fullscreen, &switch_ui_screenshot).unwrap();
+        let ui_similarity_windowed = image_compare::gray_similarity_structure(&Algorithm::MSSIMSimple, &switch_ui_reference_windowed, &switch_ui_screenshot).unwrap();
 
-    println!("{}", String::from_utf8_lossy(&chmod.stdout));
-    println!("{}", String::from_utf8_lossy(&execute.stdout));
-}
+        let home_menu_score: f64 = f64::max(ui_similarity_fullscreen.score, ui_similarity_windowed.score);
+        let home_menu_score_string = home_menu_score.to_string();
+        println!("{}", home_menu_score_string);
 
-fn rm_env() {
-    let chmod = Command::new("chmod")
-        .arg("+x")
-        .arg("./src/shell/rm.sh")
-        .output()
-        .expect("failed to make script executable");
-
-    // Pass dotenv file into shell file and execute
-    let execute = Command::new("bash")
-        .arg("-c")
-        .arg("./src/shell/rm.sh")
-        .output()
-        .expect("failed to execute");
-
-    println!("{}", String::from_utf8_lossy(&chmod.stdout));
-    println!("{}", String::from_utf8_lossy(&execute.stdout));
-}
-
-fn restart_xorg_rpc() {
-    let chmod = Command::new("chmod")
-        .arg("+x")
-        .arg("./src/shell/restart-xorg-rpc.sh")
-        .output()
-        .expect("failed to make script executable");
-
-    // Pass dotenv file into shell file and execute
-    let execute = Command::new("bash")
-        .arg("-c")
-        .arg("./src/shell/restart-xorg-rpc.sh")
-        .output()
-        .expect("failed to execute");
-
-    println!("{}", String::from_utf8_lossy(&chmod.stdout));
-    println!("{}", String::from_utf8_lossy(&execute.stdout));
+    home_menu_score
 }
 
 fn mario_kart_world(screen: &Screen, width: f32, height: f32) -> f64 {
@@ -248,4 +199,59 @@ fn pokemon_pokopia(screen: &Screen, width: f32, height: f32) -> f64 {
         println!("{}", pokemonpkp_score_string);
 
         pokemonpkp_score
+}
+
+fn execute() {
+    // Make shell file executable
+    let chmod = Command::new("chmod")
+        .arg("+x")
+        .arg("./src/shell/config.sh")
+        .output()
+        .expect("failed to make script executable");
+
+    // Pass dotenv file into shell file and execute
+    let execute = Command::new("bash")
+        .arg("-c")
+        .arg("set -a; source /home/$USER/Switch-2-GameDetect-RPC/.env; set +a; ./src/shell/config.sh")
+        .output()
+        .expect("failed to execute");
+
+    println!("{}", String::from_utf8_lossy(&chmod.stdout));
+    println!("{}", String::from_utf8_lossy(&execute.stdout));
+}
+
+fn rm_env() {
+    let chmod = Command::new("chmod")
+        .arg("+x")
+        .arg("./src/shell/rm.sh")
+        .output()
+        .expect("failed to make script executable");
+
+    // Pass dotenv file into shell file and execute
+    let execute = Command::new("bash")
+        .arg("-c")
+        .arg("./src/shell/rm.sh")
+        .output()
+        .expect("failed to execute");
+
+    println!("{}", String::from_utf8_lossy(&chmod.stdout));
+    println!("{}", String::from_utf8_lossy(&execute.stdout));
+}
+
+fn restart_xorg_rpc() {
+    let chmod = Command::new("chmod")
+        .arg("+x")
+        .arg("./src/shell/restart-xorg-rpc.sh")
+        .output()
+        .expect("failed to make script executable");
+
+    // Pass dotenv file into shell file and execute
+    let execute = Command::new("bash")
+        .arg("-c")
+        .arg("./src/shell/restart-xorg-rpc.sh")
+        .output()
+        .expect("failed to execute");
+
+    println!("{}", String::from_utf8_lossy(&chmod.stdout));
+    println!("{}", String::from_utf8_lossy(&execute.stdout));
 }

@@ -21,6 +21,7 @@ fn file_path(path: &str) -> PathBuf {
     abs_path.push(path);
     abs_path
 }
+
 fn main() -> Result<(), Box<dyn Error>> {
 
     loop {
@@ -63,7 +64,7 @@ fn main() -> Result<(), Box<dyn Error>> {
         
         let mario_score = mario_kart_world(&screen, width, height);
         //let pokemonpkp_score = pokemon_pokopia(&screen, width, height);
-        
+
         let pokemonpkp_score = 0.5;
 
                 if mario_score > 0.45 {
@@ -88,7 +89,6 @@ fn main() -> Result<(), Box<dyn Error>> {
                 } else {
                     println!("Error: No game detected");
             }
-            //thread::sleep(Duration::from_millis(250));
     }
 }
 

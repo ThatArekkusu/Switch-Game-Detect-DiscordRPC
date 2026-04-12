@@ -43,6 +43,7 @@ fn main() -> Result<(), Box<dyn Error>> {
         let width = screen.display_info.width as f32;
         let height = screen.display_info.height as f32;
 
+
         let x: i32 = (width * 0.165) as i32; 
         let y: i32 = (height * 0.696) as i32; 
 
@@ -80,42 +81,11 @@ fn main() -> Result<(), Box<dyn Error>> {
                 thread::sleep(Duration::from_millis(50));
                 continue;
         }
+        
+        let mario_score = mario_kart_world(&screen, width, height);
+        //let pokemonpkp_score = pokemon_pokopia(&screen, width, height);
+        let pokemonpkp_score = 0.5;
 
-
-        let x_mw: i32 = (width * 0.2703) as i32; 
-        let y_mw: i32 = (height * 0.0465) as i32; 
-        let w_mw: u32 = (width * 0.4438) as u32;  
-        let h_mw: u32 = (height * 0.4556) as u32;
-
-        let _ = fs::remove_file("game-images/mario-kart-world-logo-windowed.png");
-        let screenshot_image_path_mario_windowed = file_path("game-images/mario-kart-world-logo-windowed.png");
-        let image_mario_kart_world_logo_windowed = screen.capture_area(x_mw, y_mw, w_mw, h_mw).unwrap();
-        image_mario_kart_world_logo_windowed.save(&screenshot_image_path_mario_windowed).expect("Err, could not save screenshot");
-        let screenshot_mario_windowed = image::open("game-images/mario-kart-world-logo-windowed.png").unwrap().into_luma8();
-        let mario_kart_world_reference_windowed = image::open("ui-reference/mario-kart-world-logo-windowed-reference.png").unwrap().into_luma8();
-
-
-        let x_mf: i32 = (width * 0.2598) as i32; 
-        let y_mf: i32 = (height * 0.0305) as i32; 
-        let w_mf: u32 = (width * 0.4578) as u32;  
-        let h_mf: u32 = (height * 0.4375) as u32;
-
-        let _ = fs::remove_file("game-images/mario-kart-world-logo-fullscreen.png");
-        let screenshot_image_path_mario_fullscreen = file_path("game-images/mario-kart-world-logo-fullscreen.png");
-        let image_mario_kart_world_logo_fullscreen = screen.capture_area(x_mf, y_mf, w_mf, h_mf).unwrap();
-        image_mario_kart_world_logo_fullscreen.save(&screenshot_image_path_mario_fullscreen).expect("Err, could not save screenshot");
-        let screenshot_mario_fullscreen = image::open("game-images/mario-kart-world-logo-fullscreen.png").unwrap().into_luma8();
-        let mario_kart_world_reference_fullscreen = image::open("ui-reference/mario-kart-world-logo-fullscreen-reference.png").unwrap().into_luma8();
-
-        let mario_kart_similarity_windowed = image_compare::gray_similarity_structure(&Algorithm::MSSIMSimple, &mario_kart_world_reference_windowed, &screenshot_mario_windowed).unwrap();
-        let mario_kart_similarity_fullscreen = image_compare::gray_similarity_structure(&Algorithm::MSSIMSimple, &mario_kart_world_reference_fullscreen, &screenshot_mario_fullscreen).unwrap();
-
-        let mario_score: f64 = f64::max(mario_kart_similarity_windowed.score, mario_kart_similarity_fullscreen.score);
-        let mario_score_string = mario_score.to_string();
-        println!("{}", mario_score_string);
-
-        let pokemon_score = 0.5;
-        println!("{}", mario_score_string);
                 if mario_score > 0.45 {
                     if previous_game != "Playing Mario Kart World" {
                         rm_env();
@@ -126,13 +96,13 @@ fn main() -> Result<(), Box<dyn Error>> {
                         thread::sleep(Duration::from_millis(50));
                         restart_xorg_rpc();
                     }
-                } else if pokemon_score > 0.9 { 
+                } else if pokemonpkp_score > 0.9 { 
                     if previous_game != "Playing Pokemon Pokopia" {
                         rm_env();
                         envfile.update("CURRENT_GAME", "Playing Pokemon Pokopia");
                         envfile.write().expect("Failed to write to dotenv file");
                         execute();
-                        thread::sleep(Duration::from_millis(500));
+                        thread::sleep(Duration::from_millis(50));
                         restart_xorg_rpc();
                     }
                 } else {
@@ -196,4 +166,86 @@ fn restart_xorg_rpc() {
 
     println!("{}", String::from_utf8_lossy(&chmod.stdout));
     println!("{}", String::from_utf8_lossy(&execute.stdout));
+}
+
+fn mario_kart_world(screen: &Screen, width: f32, height: f32) -> f64 {
+    // "Mario Kart World" Image capture code
+        let x_mw: i32 = (width * 0.2703) as i32; 
+        let y_mw: i32 = (height * 0.0465) as i32; 
+        let w_mw: u32 = (width * 0.4438) as u32;  
+        let h_mw: u32 = (height * 0.4556) as u32;
+
+        let  mario_kart_world_windowed = "game-images/mario-kart-world-logo-windowed.png";
+        let _ = fs::remove_file(mario_kart_world_windowed);
+        let screenshot_image_path_mario_windowed = file_path(mario_kart_world_windowed);
+        let image_mario_kart_world_logo_windowed = screen.capture_area(x_mw, y_mw, w_mw, h_mw).unwrap();
+        image_mario_kart_world_logo_windowed.save(&screenshot_image_path_mario_windowed).expect("Err, could not save screenshot");
+
+        let screenshot_mario_windowed = image::open(mario_kart_world_windowed).unwrap().into_luma8();
+        let mario_kart_world_reference_windowed = image::open("ui-reference/mario-kart-world-logo-windowed-reference.png").unwrap().into_luma8();
+
+
+        let x_mf: i32 = (width * 0.2598) as i32; 
+        let y_mf: i32 = (height * 0.0305) as i32; 
+        let w_mf: u32 = (width * 0.4578) as u32;  
+        let h_mf: u32 = (height * 0.4375) as u32;
+
+        let mario_kart_world_fullscreen = "game-images/mario-kart-world-logo-fullscreen.png";
+        let _ = fs::remove_file(mario_kart_world_fullscreen);
+        let screenshot_image_path_mario_fullscreen = file_path(mario_kart_world_fullscreen);
+        let image_mario_kart_world_logo_fullscreen = screen.capture_area(x_mf, y_mf, w_mf, h_mf).unwrap();
+        image_mario_kart_world_logo_fullscreen.save(&screenshot_image_path_mario_fullscreen).expect("Err, could not save screenshot");
+
+        let screenshot_mario_fullscreen = image::open(mario_kart_world_fullscreen).unwrap().into_luma8();
+        let mario_kart_world_reference_fullscreen = image::open("ui-reference/mario-kart-world-logo-fullscreen-reference.png").unwrap().into_luma8();
+
+
+        let mario_kart_similarity_windowed = image_compare::gray_similarity_structure(&Algorithm::MSSIMSimple, &mario_kart_world_reference_windowed, &screenshot_mario_windowed).unwrap();
+        let mario_kart_similarity_fullscreen = image_compare::gray_similarity_structure(&Algorithm::MSSIMSimple, &mario_kart_world_reference_fullscreen, &screenshot_mario_fullscreen).unwrap();
+
+        let mario_score: f64 = f64::max(mario_kart_similarity_windowed.score, mario_kart_similarity_fullscreen.score);
+        let mario_score_string = mario_score.to_string();
+        println!("{}", mario_score_string);
+
+        mario_score
+}
+
+fn pokemon_pokopia(screen: &Screen, width: f32, height: f32) -> f64 {
+    // "Pokemon Pokopia" Image capture code (unimplemented)
+        let x_pkpw: i32 = (width * 0.5) as i32;
+        let y_pkpw: i32 = (height * 0.5) as i32;
+        let w_pkpw: u32 = (width * 0.5) as u32;
+        let h_pkpw: u32 = (height * 0.5) as u32;
+
+        let pokemon_pokopia_windowed = "game-images/pokemon-pokopia-logo-windowed.png";
+        let _ = fs::remove_file(pokemon_pokopia_windowed);
+        let screenshot_image_path_pokemonpkp_windowed = file_path(pokemon_pokopia_windowed);
+        let image_pokemon_pokopia_logo_windowed = screen.capture_area(x_pkpw, y_pkpw, w_pkpw, h_pkpw).unwrap();
+        image_pokemon_pokopia_logo_windowed.save(&screenshot_image_path_pokemonpkp_windowed).expect("Err, could not save screenshot");
+
+        let screenshot_pokemonpkp_windowed = image::open(pokemon_pokopia_windowed).unwrap().into_luma8();
+        let pokemon_pokopia_reference_windowed = image::open("ui-reference/pokemon-pokopia-windowed-reference.png").unwrap().into_luma8();
+
+        let x_pkpf: i32 = (width * 0.5) as i32;
+        let y_pkpf: i32 = (height * 0.5) as i32;
+        let w_pkpf: u32 = (width * 0.5) as u32;
+        let h_pkpf: u32 = (height * 0.5) as u32;
+
+        let pokemon_pokopia_fullscreen = "game-images/pokemon-pokopia-logo-fullscreen.png";
+        let _ = fs::remove_file(pokemon_pokopia_fullscreen);
+        let screenshot_image_path_pokemonpkp_fullscreen = file_path(pokemon_pokopia_fullscreen);
+        let image_pokemon_pokopia_logo_fullscreen = screen.capture_area(x_pkpf, y_pkpf, w_pkpf, h_pkpf).unwrap();
+        image_pokemon_pokopia_logo_fullscreen.save(&screenshot_image_path_pokemonpkp_fullscreen).expect("Err, could not save screenshot");
+
+        let screenshot_pokemonpkp_fullscreen = image::open(pokemon_pokopia_fullscreen).unwrap().into_luma8();
+        let pokemon_pokopia_reference_fullscreen = image::open("ui-reference/pokemon-pokopia-fullscreen-reference.png").unwrap().into_luma8();
+
+        let pokemonpkp_similarity_windowed = image_compare::gray_similarity_structure(&Algorithm::MSSIMSimple, &pokemon_pokopia_reference_windowed, &screenshot_pokemonpkp_windowed).unwrap();
+        let pokemonpkp_similarity_fullscreen = image_compare::gray_similarity_structure(&Algorithm::MSSIMSimple, &pokemon_pokopia_reference_fullscreen, &screenshot_pokemonpkp_fullscreen).unwrap();
+
+        let pokemonpkp_score: f64 = f64::max(pokemonpkp_similarity_windowed.score, pokemonpkp_similarity_fullscreen.score);
+        let pokemonpkp_score_string = pokemonpkp_score.to_string();
+        println!("{}", pokemonpkp_score_string);
+
+        pokemonpkp_score
 }
